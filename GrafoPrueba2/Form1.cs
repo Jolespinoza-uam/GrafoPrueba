@@ -101,12 +101,19 @@ namespace GrafoPrueba2
         }
         private void btnRecorrer_Click(object sender, EventArgs e)
         {
+            if (treeViewArbol.SelectedNode == null)
+            {
+                MessageBox.Show("Selecciona un nodo primero.");
+                return;
+            }
+
             List<string> recorrido = new List<string>();
+            Orden(treeViewArbol.SelectedNode, recorrido);
 
-            foreach (TreeNode root in treeViewArbol.Nodes)
-                Orden(root, recorrido);
-
-            MessageBox.Show("Recorrido:\n" + string.Join(" -> ", recorrido));
+            MessageBox.Show(
+                $"Recorrido desde \"{treeViewArbol.SelectedNode.Text}\":\n" +
+                string.Join(" -> ", recorrido)
+            );
         }
     }
 }
