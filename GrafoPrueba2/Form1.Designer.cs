@@ -97,6 +97,7 @@
             btnRecorrer.TabIndex = 5;
             btnRecorrer.Text = "Recorridos";
             btnRecorrer.UseVisualStyleBackColor = true;
+            btnRecorrer.Click += btnRecorrer_Click;
             // 
             // btnBuscar
             // 
@@ -136,7 +137,7 @@
             // 
             // treeViewArbol
             // 
-            treeViewArbol.Location = new Point(19, 27);
+            treeViewArbol.Location = new Point(0, 36);
             treeViewArbol.Name = "treeViewArbol";
             treeViewArbol.Size = new Size(414, 355);
             treeViewArbol.TabIndex = 0;

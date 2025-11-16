@@ -92,5 +92,21 @@ namespace GrafoPrueba2
 
             MessageBox.Show("Total de nodos: " + total);
         }
+
+        private void Orden(TreeNode node, List<string> lista)
+        {
+            lista.Add(node.Text);
+            foreach (TreeNode hijo in node.Nodes)
+                Orden(hijo, lista);
+        }
+        private void btnRecorrer_Click(object sender, EventArgs e)
+        {
+            List<string> recorrido = new List<string>();
+
+            foreach (TreeNode root in treeViewArbol.Nodes)
+                Orden(root, recorrido);
+
+            MessageBox.Show("Recorrido:\n" + string.Join(" -> ", recorrido));
+        }
     }
 }
