@@ -1,14 +1,15 @@
-namespace GrafoPrueba2
+﻿namespace GrafoPrueba2
 {
     public partial class Form1 : Form
     {
-        Dictionary<string, List<(string destino, int peso)>> grafo =
-        new Dictionary<string, List<(string destino, int peso)>>();
-
         Recorrido arbol = new Recorrido();
+        Grafo grafo = new Grafo();
         public Form1()
         {
             InitializeComponent();
+
+            tabPage1.Text = "Arbol";
+            tabPage2.Text = "Grafo";
         }
 
         private void groupBox1_Enter(object sender, EventArgs e)
@@ -169,118 +170,88 @@ namespace GrafoPrueba2
 
         private void btnAgregarConexiones_Click(object sender, EventArgs e)
         {
-            string A = txtA.Text;
-            string B = txtB.Text;
-            int d = (int)numDistancia.Value;
+            string a = comboA.Text;
+            string b = comboB.Text;
+            int distancia;
 
-            if (!grafo.ContainsKey(A)) grafo[A] = new List<(string, int)>();
-            if (!grafo.ContainsKey(B)) grafo[B] = new List<(string, int)>();
+            if (!int.TryParse(txtDistancia.Text, out distancia))
+            {
+                MessageBox.Show("Distancia inválida.");
+                return;
+            }
 
-            grafo[A].Add((B, d));
-            grafo[B].Add((A, d));
-
-            MessageBox.Show("Conexi�n agregada.");
+            if (grafo.AgregarConexion(a, b, distancia))
+            {
+                listBoxVisualizar.Items.Add($"{a} - {b} : {distancia}m");
+            }
+            else
+            {
+                MessageBox.Show("Ya existe la arista o faltan edificios.");
+            }
         }
 
         private void btnMostrarConexiones_Click(object sender, EventArgs e)
         {
-            string res = "";
+            string nodo = comboA.Text;
 
-            foreach (var nodo in grafo)
-            {
-                res += $"{nodo.Key}: ";
-                res += string.Join(", ", nodo.Value.Select(x => $"{x.destino}({x.peso})"));
-                res += "\n";
-            }
+            var conexiones = grafo.ObtenerConexionesDe(nodo);
 
-            MessageBox.Show(res, "Conexiones");
+            listBoxVisualizar.Items.Clear();
+            foreach (var c in conexiones)
+                listBoxVisualizar.Items.Add($"{nodo} → {c}");
         }
 
         private void btnEsConexo_Click(object sender, EventArgs e)
         {
-            if (grafo.Count == 0)
-            {
-                MessageBox.Show("El grafo est� vac�o.");
-                return;
-            }
+            string a = comboA.Text;
+            string b = comboB.Text;
 
-            string start = grafo.Keys.First();
-            HashSet<string> visitados = new HashSet<string>();
-
-            void DFS(string v)
-            {
-                visitados.Add(v);
-                foreach (var (dest, _) in grafo[v])
-                    if (!visitados.Contains(dest))
-                        DFS(dest);
-            }
-
-            DFS(start);
-
-            if (visitados.Count == grafo.Count)
-                MessageBox.Show("El grafo es conexo.");
+            if (grafo.ValidarConexion(a, b))
+                MessageBox.Show("Los edificios están conectados.");
             else
-                MessageBox.Show("El grafo NO es conexo.");
+                MessageBox.Show("NO existe conexión entre esos edificios.");
         }
 
         private void btnRutaMinima_Click(object sender, EventArgs e)
         {
-            string inicio = txtA.Text;
-            string fin = txtB.Text;
+            string inicio = comboA.Text;
 
-            var dist = new Dictionary<string, int>();
-            var prev = new Dictionary<string, string>();
-            var pq = new SortedSet<(int d, string nodo)>();
-
-            foreach (var v in grafo.Keys)
+            if (string.IsNullOrWhiteSpace(inicio))
             {
-                dist[v] = int.MaxValue;
-                prev[v] = null;
-            }
-
-            dist[inicio] = 0;
-            pq.Add((0, inicio));
-
-            while (pq.Count > 0)
-            {
-                var (d, u) = pq.First();
-                pq.Remove(pq.First());
-
-                if (u == fin) break;
-
-                foreach (var (v, peso) in grafo[u])
-                {
-                    int nd = d + peso;
-                    if (nd < dist[v])
-                    {
-                        pq.Remove((dist[v], v));
-                        dist[v] = nd;
-                        prev[v] = u;
-                        pq.Add((nd, v));
-                    }
-                }
-            }
-
-            if (dist[fin] == int.MaxValue)
-            {
-                MessageBox.Show("No existe ruta.");
+                MessageBox.Show("Seleccione un edificio de inicio.");
                 return;
             }
 
-            List<string> camino = new List<string>();
-            string temp = fin;
-            while (temp != null)
-            {
-                camino.Add(temp);
-                temp = prev[temp];
-            }
-            camino.Reverse();
+            var (destino, distancia) = grafo.RutaMasCortaDesde(inicio);
 
-            MessageBox.Show("Ruta m�nima:\n" + string.Join(" -> ", camino) +
-                            "\nDistancia total: " + dist[fin]);
+            if (destino == null)
+            {
+                MessageBox.Show("Este edificio no tiene conexiones.");
+                return;
+            }
+
+            MessageBox.Show($"Ruta más corta:\n{inicio} → {destino} ({distancia} m)", "Ruta mínima");
         }
 
-        private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
+        private void btnAgregarEdificio_Click(object sender, EventArgs e)
+        {
+            string nombre = txtEdificio.Text.Trim();
+
+            if (grafo.AgregarNodo(nombre))
+            {
+                listBoxEdificios.Items.Add(nombre);
+                comboA.Items.Add(nombre);
+                comboB.Items.Add(nombre);
+            }
+            else
+            {
+                MessageBox.Show("Ese edificio ya existe.");
+            }
+
+            txtEdificio.Clear();
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
         {
 
         }
